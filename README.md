@@ -43,5 +43,18 @@ python3 profile-compare.py 1000010893 profile1 future --newer --noncompliant 100
 python3 profile-compare.py 1000010893 profile1 now --onother
 
 
+
+Before you start:
+
+Please replace the URL of the SUMA server and enter your credentials:
+
+MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
+
+MANAGER_LOGIN = "[User]"
+
+MANAGER_PASSWORD = "[Password]"
+
+
+
 P.S.:
 I am new to Python, be patient with me ;-)
