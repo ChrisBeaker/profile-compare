@@ -36,9 +36,7 @@ def fltPackages(state, profile_packages): # state can be onother=3 or newer=4 / 
                  Version: {package.get('package_version'):26}\
                  Release: {package.get('package_release'):15}\
                     Arch: {package.get('package_arch')}")
-        return flt_packages
-    else:
-        return False
+    return flt_packages
 
 def scheduleInstallation(key, srvtgt, list_packages, siptime):
     print ('\nSchedule package installation')
