@@ -1,0 +1,3 @@
+MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
+MANAGER_LOGIN = "[User]"
+MANAGER_PASSWORD = "[Password]"
