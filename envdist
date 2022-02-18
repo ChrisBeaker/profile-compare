@@ -1,3 +1,7 @@
+Please enter the FQDN of the SUSE Manager Server and the login credentials:
+Then rename the file to .env
+The script will read the information from the .env file or if not found from environment variable
+
 MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
 MANAGER_LOGIN = "[User]"
 MANAGER_PASSWORD = "[Password]"
