@@ -12,6 +12,7 @@ import datetime
 import argparse
 import xmlrpc.client
 import sys
+from dotenv import load_dotenv
 
 
 MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
