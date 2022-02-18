@@ -1,23 +1,24 @@
 #!/usr/bin/python3
 #
-#
 # SUMA API Method: listExtraPackages, 
 # SUMA API Method: schedulePackageInstallByNevra
 # SUMA API Method: comparePackageProfile
 #
-
 
 from xmlrpc.client import ServerProxy
 import datetime
 import argparse
 import xmlrpc.client
 import sys
-from dotenv import load_dotenv
+import os
+import http.client
 
-
-MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
-MANAGER_LOGIN = "[User]"
-MANAGER_PASSWORD = "[Password]"
+try:
+    from dotenv import load_dotenv
+    dotenv_sup = True
+except ModuleNotFoundError as err:
+#    print(err)
+    dotenv_sup = False
 
 def fltPackages(state, profile_packages): # state can be onother=3 or newer=4 / profile_packages = complete list of packages form profile
     flt_packages = []
@@ -51,9 +52,6 @@ def scheduleInstallation(key, srvtgt, list_packages, siptime):
         print("Hint: You may need to exclude this package with paramater --noncompliant")
 
 
-client = ServerProxy(MANAGER_URL)
-key = client.auth.login(MANAGER_LOGIN, MANAGER_PASSWORD)
-
 parser = argparse.ArgumentParser(description='Application parameters description')
 parser.add_argument('srvtgt', type=int, help='SUSE Manager System ID of Target System')
 parser.add_argument('profile', type=str, help='SUSE Manager Stored Profile Name')
@@ -76,6 +74,43 @@ newer = []               #list of newer packages - pre-defined in case of mixing
 onother = []             #list of onother packages  - pre-defined in case of mixing unsupport args parameters
 list_packages = []       #list of left packages after filter, or if filter is skiped
 final_list = []          #in case paramater split is not used, then add packages from onother and newer to this list together
+
+#reading SUMA URL and credentials from .env file or os environment
+if dotenv_sup:
+    load_dotenv()
+    MANAGER_URL = os.environ.get('MANAGER_URL')
+    MANAGER_LOGIN = os.environ.get('MANAGER_LOGIN')
+    MANAGER_PASSWORD = os.environ.get('MANAGER_PASSWORD')
+else:
+#########################################################################################
+    #If the .env files can not be used, please enter the SUMA information here instead
+    MANAGER_URL = "https://[SUMA FQDN]/rpc/api"
+    MANAGER_LOGIN = "[User]"
+    MANAGER_PASSWORD = "[Password]"
+#########################################################################################
+
+try:
+    client = ServerProxy(MANAGER_URL)
+    key = client.auth.login(MANAGER_LOGIN, MANAGER_PASSWORD)
+except (xmlrpc.client.Fault,) as err:
+    print("A fault occurred")
+    print("Fault code: %d" % err.faultCode)
+    print("Fault string: %s" % err.faultString)
+    print(f"The SUMA URL or credentials are not correct, can not login to server")
+    sys.exit()
+
+except (xmlrpc.client.ProtocolError) as err:
+    print("A fault occurred")
+    print("Fault code: %d" % err.errcode)
+    print("Fault string: %s" % err.errmsg)
+    sys.exit()
+
+except (http.client.InvalidURL) as err:
+    print(f"Sorry on this system the .env file can not be used to read SUMA URL and credential information.\n\
+Please enter the information direct into this script, an re-run it.\n\
+Or the configured URL is invalide")
+    sys.exit()
+
 
 # read all packaes from profile
 try:
@@ -120,7 +155,7 @@ if args.onother == True:
 if args.newer == True:
     newer = fltPackages('newer',list_packages)
 
-#check if paramer split is used and call scheduler action. 
+#check if parameter split is used and call scheduler action. 
 if args.split == True:
     if onother:
         scheduleInstallation(key, srvtgt, onother, siptime) 
@@ -136,6 +171,5 @@ elif args.split == False:
         scheduleInstallation(key, srvtgt, final_list, siptime) 
 else:
     print ("No Packages available!")
-
 
 client.auth.logout(key)
